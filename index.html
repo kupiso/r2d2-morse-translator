@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>R2-D2's Morse Code Translator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom styles for Inter font and general body styling */
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #1a202c; /* Dark background for a galactic feel */
+        color: #e2e8f0; /* Light text for contrast */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /* Ensure it takes full viewport height */
+        padding: 1rem; /* Add some padding around the content */
+      }
+      /* Styling for the main container */
+      .translator-container {
+        background-color: #2d3748; /* Slightly lighter dark background */
+        border-radius: 1.5rem; /* More rounded corners */
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5); /* Stronger shadow for depth */
+        max-width: 900px; /* Max width for larger screens */
+        width: 100%; /* Full width on smaller screens */
+        padding: 2.5rem; /* Generous padding inside the container */
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; /* Space between sections */
+      }
+      /* Input/Output area styling */
+      textarea {
+        background-color: #4a5568; /* Darker input background */
+        border: 1px solid #4a5568;
+        border-radius: 0.75rem; /* Rounded input fields */
+        padding: 1rem;
+        color: #e2e8f0;
+        resize: vertical; /* Allow vertical resizing */
+        min-height: 100px; /* Minimum height for text areas */
+      }
+      textarea:focus {
+        outline: none;
+        border-color: #63b3ed; /* Blue border on focus */
+        box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.5); /* Focus ring */
+      }
+      /* Button styling */
+      .btn {
+        background-color: #4299e1; /* Blue button */
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: bold;
+        transition: background-color 0.3s ease, transform 0.1s ease;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+      .btn:hover {
+        background-color: #3182ce; /* Darker blue on hover */
+        transform: translateY(-2px); /* Slight lift on hover */
+      }
+      .btn:active {
+        transform: translateY(0); /* Press effect */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      /* Specific style for the play sound button */
+      #playMorseSoundBtn {
+        background-color: #48bb78; /* Green button */
+      }
+      #playMorseSoundBtn:hover {
+        background-color: #38a169; /* Darker green on hover */
+      }
+      /* Specific style for the clear button */
+      #clearBtn {
+        background-color: #a0aec0; /* Gray button */
+        color: #2d3748;
+      }
+      #clearBtn:hover {
+        background-color: #718096; /* Darker gray on hover */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="translator-container">
+      <div class="input-section flex flex-col gap-4">
+        <h2 class="text-2xl font-bold text-center text-blue-300">
+          Plain Text Input
+        </h2>
+        <textarea
+          id="plainTextInput"
+          placeholder="Type your message here..."
+        ></textarea>
+        <button id="encodeBtn" class="btn">Encode to Morse Code</button>
+      </div>
+
+      <div class="output-section flex flex-col gap-4 mt-8 md:mt-0">
+        <h2 class="text-2xl font-bold text-center text-green-300">
+          Morse Code Input
+        </h2>
+        <textarea
+          id="morseCodeInput"
+          placeholder="Type your Morse code here..."
+        ></textarea>
+        <button id="decodeBtn" class="btn">Decode to Plain Text</button>
+        <button id="playMorseSoundBtn" class="btn">Play Morse Sound</button>
+        <button id="clearBtn" class="btn">Clear All</button>
+      </div>
+    </div>
+
+    <script>
+      // --- R2-D2's Galactic Morse Code Dictionary ---
+      // This object maps characters to their respective Morse code representations.
+      // Spaces are handled by a single slash '/' between words in Morse code.
+      // Punctuation is also included.
+      const MORSE_CODE_DICT = {
+        A: ".-",
+        B: "-...",
+        C: "-.-.",
+        D: "-..",
+        E: ".",
+        F: "..-.",
+        G: "--.",
+        H: "....",
+        I: "..",
+        J: ".---",
+        K: "-.-",
+        L: ".-..",
+        M: "--",
+        N: "-.",
+        O: "---",
+        P: ".--.",
+        Q: "--.-",
+        R: ".-.",
+        S: "...",
+        T: "-",
+        U: "..-",
+        V: "...-",
+        W: ".--",
+        X: "-..-",
+        Y: "-.--",
+        Z: "--..",
+        0: "-----",
+        1: ".----",
+        2: "..---",
+        3: "...--",
+        4: "....-",
+        5: ".....",
+        6: "-....",
+        7: "--...",
+        8: "---..",
+        9: "----.",
+        ".": ".-.-.-",
+        ",": "--..--",
+        "?": "..--..",
+        "'": ".----.",
+        "!": "-.-.--",
+        "/": "-..-.",
+        "(": "-.--.",
+        ")": "-.--.-",
+        "&": ".-...",
+        ":": "---...",
+        ";": "-.-.-.",
+        "=": "-...-",
+        "+": ".-.-.",
+        "-": "-....-",
+        _: "..--.-",
+        '"': ".-..-.",
+        $: "...-..-",
+        "@": ".--.-.",
+        " ": "/", // Space is represented by a single slash in Morse code
+      };
+
+      // --- Reverse Dictionary for Decoding ---
+      // This object maps Morse code representations back to characters.
+      // It's generated from the main dictionary for efficient decoding.
+      const MORSE_CODE_DECODE_DICT = {};
+      for (const key in MORSE_CODE_DICT) {
+        if (MORSE_CODE_DICT.hasOwnProperty(key)) {
+          MORSE_CODE_DECODE_DICT[MORSE_CODE_DICT[key]] = key;
+        }
+      }
+
+      /**
+       * Converts a plain text message into Morse code.
+       *
+       * @param {string} text The input string to be converted.
+       * @returns {string} The Morse code representation of the input text.
+       * Words are separated by a single slash '/', and characters
+       * within a word are separated by a single space.
+       * Handles characters not in the dictionary by ignoring them.
+       */
+      function lettersToMorseCode(text) {
+        if (!text || typeof text !== "string") {
+          console.warn("Input must be a string. Returning empty string.");
+          return "";
+        }
+
+        let morseCodeMessage = [];
+        // Convert the entire text to uppercase to match dictionary keys
+        // and iterate through each word.
+        const words = text.toUpperCase().split(" ");
+
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
+          let morseWord = [];
+          for (let j = 0; j < word.length; j++) {
+            const char = word[j];
+            // Check if the character exists in our Morse code dictionary
+            if (MORSE_CODE_DICT.hasOwnProperty(char)) {
+              morseWord.push(MORSE_CODE_DICT[char]);
+            }
+            // If a character is not found, it's ignored.
+          }
+          // Join characters within a word with a single space
+          morseCodeMessage.push(morseWord.join(" "));
+
+          // Add a slash between words, but not after the last word
+          if (i < words.length - 1) {
+            morseCodeMessage.push("/");
+          }
+        }
+        // Join the entire message, ensuring no trailing slash if the last character was a space
+        return morseCodeMessage.join("").trim();
+      }
+
+      /**
+       * Converts a Morse code message back to plain text.
+       *
+       * @param {string} code The Morse code input string.
+       * Expects characters separated by spaces and words
+       * separated by a single slash '/'.
+       * @returns {string} The decoded plain text message.
+       * Handles invalid Morse code sequences by ignoring them.
+       */
+      function morseCodeToLetters(code) {
+        if (!code || typeof code !== "string") {
+          console.warn("Input must be a string. Returning empty string.");
+          return "";
+        }
+
+        let plainTextMessage = [];
+        // Split the input code by the word separator '/'
+        const morseWords = code.trim().split("/");
+
+        for (let i = 0; i < morseWords.length; i++) {
+          const morseWord = morseWords[i];
+          // Split each Morse word into individual Morse characters
+          // Filter out empty strings that might result from multiple spaces (e.g., ".-  ..." -> [".-", "...", ""])
+          const morseChars = morseWord
+            .trim()
+            .split(" ")
+            .filter((c) => c !== "");
+          let decodedWord = [];
+          for (let j = 0; j < morseChars.length; j++) {
+            const morseChar = morseChars[j];
+            // Check if the Morse character exists in our decode dictionary
+            if (MORSE_CODE_DECODE_DICT.hasOwnProperty(morseChar)) {
+              decodedWord.push(MORSE_CODE_DECODE_DICT[morseChar]);
+            }
+            // If a Morse sequence is not found, it's ignored.
+          }
+          // Join the decoded characters to form a word
+          plainTextMessage.push(decodedWord.join(""));
+        }
+        // Join the words with a space to form the final plain text message
+        return plainTextMessage.join(" ").trim();
+      }
+
+      // --- Audio Playback Functions ---
+      const DOT_DURATION = 100; // milliseconds
+      const DASH_DURATION = DOT_DURATION * 3;
+      const CHAR_SPACE_DURATION = DOT_DURATION; // Pause between dots/dashes within a character
+      const LETTER_SPACE_DURATION = DOT_DURATION * 3; // Pause between characters
+      const WORD_SPACE_DURATION = DOT_DURATION * 7; // Pause between words (represented by '/')
+
+      let audioContext = null; // Initialize audioContext to null
+      let gainNode = null;
+
+      /**
+       * Initializes the Web Audio API context and gain node.
+       * This should be called only once, preferably on user interaction.
+       */
+      function initAudio() {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+          gainNode = audioContext.createGain();
+          gainNode.gain.setValueAtTime(0, audioContext.currentTime); // Start silent
+          gainNode.connect(audioContext.destination);
+        }
+      }
+
+      /**
+       * Plays a single tone (beep) for a given duration.
+       * @param {number} duration The duration of the tone in milliseconds.
+       * @returns {Promise<void>} A promise that resolves when the tone finishes.
+       */
+      function playTone(duration) {
+        return new Promise((resolve) => {
+          // Ensure audio context is initialized
+          if (!audioContext) initAudio();
+
+          const oscillator = audioContext.createOscillator();
+          oscillator.type = "sine"; // Sine wave for a clear beep
+          oscillator.frequency.setValueAtTime(700, audioContext.currentTime); // Frequency in Hz (e.g., 700 Hz)
+
+          oscillator.connect(gainNode);
+          gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // Turn on sound (volume)
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + duration / 1000); // Stop after duration
+
+          oscillator.onended = () => {
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime); // Turn off sound
+            resolve();
+          };
+        });
+      }
+
+      /**
+       * Creates a pause for a given duration.
+       * @param {number} duration The duration of the pause in milliseconds.
+       * @returns {Promise<void>} A promise that resolves after the pause.
+       */
+      function playPause(duration) {
+        return new Promise((resolve) => {
+          setTimeout(resolve, duration);
+        });
+      }
+
+      /**
+       * Plays the given Morse code string as audio beeps.
+       * @param {string} morseCode The Morse code string to play.
+       */
+      async function playMorseCodeSound(morseCode) {
+        // Initialize audio context on first playback or if it was closed
+        if (!audioContext || audioContext.state === "closed") {
+          initAudio();
+        }
+
+        const words = morseCode.trim().split("/");
+
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i].trim();
+          // Filter out empty strings that might result from multiple spaces
+          const morseChars = word.split(" ").filter((c) => c !== "");
+
+          for (let j = 0; j < morseChars.length; j++) {
+            const morseChar = morseChars[j];
+            for (let k = 0; k < morseChar.length; k++) {
+              const symbol = morseChar[k];
+              if (symbol === ".") {
+                await playTone(DOT_DURATION);
+              } else if (symbol === "-") {
+                await playTone(DASH_DURATION);
+              }
+              // Add a small pause between dots/dashes within a single character
+              if (k < morseChar.length - 1) {
+                await playPause(CHAR_SPACE_DURATION);
+              }
+            }
+            // Add a pause between characters within a word
+            if (j < morseChars.length - 1) {
+              await playPause(LETTER_SPACE_DURATION);
+            }
+          }
+          // Add a pause between words
+          if (i < words.length - 1) {
+            await playPause(WORD_SPACE_DURATION);
+          }
+        }
+      }
+
+      // --- Event Listeners for UI interaction ---
+      document.addEventListener("DOMContentLoaded", () => {
+        const plainTextInput = document.getElementById("plainTextInput");
+        const morseCodeInput = document.getElementById("morseCodeInput");
+        const encodeBtn = document.getElementById("encodeBtn");
+        const decodeBtn = document.getElementById("decodeBtn");
+        const playMorseSoundBtn = document.getElementById("playMorseSoundBtn");
+        const clearBtn = document.getElementById("clearBtn"); // Get reference to the new clear button
+
+        // Event listener for the "Encode" button
+        encodeBtn.addEventListener("click", () => {
+          const text = plainTextInput.value;
+          const encoded = lettersToMorseCode(text);
+          morseCodeInput.value = encoded; // Display encoded Morse code in the Morse input area
+        });
+
+        // Event listener for the "Decode" button
+        decodeBtn.addEventListener("click", () => {
+          const code = morseCodeInput.value;
+          const decoded = morseCodeToLetters(code);
+          plainTextInput.value = decoded; // Display decoded plain text in the plain text area
+        });
+
+        // Event listener for the "Play Morse Sound" button
+        playMorseSoundBtn.addEventListener("click", () => {
+          const morseCode = morseCodeInput.value;
+          if (morseCode) {
+            playMorseCodeSound(morseCode);
+          } else {
+            console.warn("No Morse code to play.");
+          }
+        });
+
+        // Event listener for the new "Clear All" button
+        clearBtn.addEventListener("click", () => {
+          plainTextInput.value = ""; // Clear plain text area
+          morseCodeInput.value = ""; // Clear Morse code area
+        });
+      });
+    </script>
+  </body>
+</html>
