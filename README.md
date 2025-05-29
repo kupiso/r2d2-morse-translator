@@ -83,3 +83,8 @@ Contributions are welcome! If you have ideas for improvements or new features, f
 This project is open source and available under the MIT License. (You might want to add a LICENSE file if you haven't already)
 
 May the Force be with you!
+
+## 🙏 Acknowledgements
+
+- Thanks to the International Morse Code standards for providing the foundation.
+- Inspired by the iconic R2-D2 from Star Wars.
