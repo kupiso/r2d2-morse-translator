@@ -81,6 +81,22 @@
       #clearBtn:hover {
         background-color: #718096; /* Darker gray on hover */
       }
+
+      /* Basic responsiveness for smaller screens */
+@media (max-width: 640px) {
+    .translator-container {
+        padding: 1.5rem;
+        border-radius: 1rem;
+    }
+    textarea {
+        min-height: 80px; /* Slightly smaller height on mobile */
+        font-size: 0.9em; /* Smaller font for better fit */
+    }
+    .btn {
+        padding: 0.6rem 1.2rem; /* Smaller buttons on mobile */
+        font-size: 0.9em;
+    }
+}
     </style>
   </head>
   <body>
