@@ -7,6 +7,10 @@ The Rebel Alliance intercepted a message from the Empire, but it's in Morse Code
 ✨ Features
 📤 Encode: Convert plain text messages into Morse code.
 
+## 🌐 Browser Compatibility
+
+This translator is designed to work seamlessly in modern web browsers including Chrome, Firefox, Safari, and Edge.
+
 📥 Decode: Convert Morse code (dots, dashes, and slashes) back into plain language.
 
 🔊 Audio Playback: Hear the Morse code played as beeps and boops.
@@ -34,8 +38,11 @@ Open the file:
 Simply open the index.html file (or r2d2_translator.html if you named it that) in your preferred web browser.
 
 # Example (macOS/Linux)
+
 open index.html
+
 # Example (Windows)
+
 start index.html
 
 Translate:
