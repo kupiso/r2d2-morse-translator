@@ -79,6 +79,12 @@ HAVE YOU SEEN ROBOD?
 🤝 Contributing
 Contributions are welcome! If you have ideas for improvements or new features, feel free to open an issue or submit a pull request.
 
+## ❓ Troubleshooting
+
+- **No Sound?** Ensure your browser allows autoplay or site sound. Also, check your system's volume. Some browsers require user interaction before playing audio.
+- **Incorrect Decoding?** Double-check your Morse code input. Ensure individual characters are separated by single spaces and words by single slashes (`/`). Extra spaces or incorrect symbols can cause issues.
+- **Page Not Loading?** Verify that `index.html` is in the same directory as the `.git` folder and open it directly in a browser.
+
 📄 License
 This project is open source and available under the MIT License. (You might want to add a LICENSE file if you haven't already)
 
