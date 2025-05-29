@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
-</html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -83,20 +81,20 @@
       }
 
       /* Basic responsiveness for smaller screens */
-@media (max-width: 640px) {
-    .translator-container {
-        padding: 1.5rem;
-        border-radius: 1rem;
-    }
-    textarea {
-        min-height: 80px; /* Slightly smaller height on mobile */
-        font-size: 0.9em; /* Smaller font for better fit */
-    }
-    .btn {
-        padding: 0.6rem 1.2rem; /* Smaller buttons on mobile */
-        font-size: 0.9em;
-    }
-}
+      @media (max-width: 640px) {
+        .translator-container {
+          padding: 1.5rem;
+          border-radius: 1rem;
+        }
+        textarea {
+          min-height: 80px; /* Slightly smaller height on mobile */
+          font-size: 0.9em; /* Smaller font for better fit */
+        }
+        .btn {
+          padding: 0.6rem 1.2rem; /* Smaller buttons on mobile */
+          font-size: 0.9em;
+        }
+      }
     </style>
   </head>
   <body>
@@ -127,13 +125,15 @@
     </div>
 
     <script>
-         'use strict';
+      "use strict";
       // --- R2-D2's Galactic Morse Code Dictionary ---
       // This object maps characters to their respective Morse code representations.
       // Spaces are handled by a single slash '/' between words in Morse code.
       // Punctuation is also included.
       const MORSE_CODE_DICT = {
         A: ".-",
+        B: "-...",
+        C: "-.-.",
         B: "-...",
         C: "-.-.",
         D: "-..",
@@ -265,7 +265,7 @@
         for (let i = 0; i < morseWords.length; i++) {
           const morseWord = morseWords[i];
           // Split each Morse word into individual Morse characters
-          // Filter out empty strings that might result from multiple spaces (e.g., ".-  ..." -> [".-", "...", ""])
+          // Filter out empty strings that might result from multiple spaces (e.g., ".-  ..." -> [".-", "...", ""])
           const morseChars = morseWord
             .trim()
             .split(" ")
@@ -408,6 +408,13 @@
         });
 
         // Event listener for the "Decode" button
+        encodeBtn.addEventListener("click", () => {
+          const text = plainTextInput.value;
+          const encoded = lettersToMorseCode(text);
+          morseCodeInput.value = encoded; // Display encoded Morse code in the Morse input area
+        });
+
+        // Event listener for the "Decode" button
         decodeBtn.addEventListener("click", () => {
           const code = morseCodeInput.value;
           const decoded = morseCodeToLetters(code);
@@ -427,9 +434,12 @@
         // Event listener for the new "Clear All" button
         clearBtn.addEventListener("click", () => {
           plainTextInput.value = ""; // Clear plain text area
-          morseCodeInput.value = ""; // Clear Morse text / code area
+          morseCodeInput.value = ""; // Clear Morse code area
         });
       });
     </script>
+    <footer class="text-center text-gray-500 text-sm mt-8">
+      &copy; 2025 R2-D2 Translator Project. All Rights Reserved.
+    </footer>
   </body>
 </html>
